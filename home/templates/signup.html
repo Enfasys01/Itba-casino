@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Sign in {% endblock %}
+
+{% block content %}
+<div class="absolute-center box-container">
+  <h2 class="text-3xl text-center font-bold">Sign up</h2>
+  {% if error %}
+    <p class="form-error">{{ error }}</p>
+  {% endif %}
+  <form method="post" class="form">
+    {% csrf_token %}
+    <div class="input-container">
+      <input type="email" name="email" id="email" placeholder="" value="{{ form.email }}" required>
+      <label for="email">Email</label>
+    </div>
+    <div class="input-container">
+      <input type="username" name="username" id="username" placeholder="" value="{{ form.username }}" required>
+      <label for="username">Username</label>
+    </div>
+    <div class="input-container">
+      <input type="password" name="password" id="password" placeholder="" value="{{ form.password }}" required>
+      <label for="password">Password</label>
+    </div>
+    <div class="input-container">
+      <input type="password" name="password2" id="password2" placeholder="" value="{{ form.password2 }}" required>
+      <label for="password2">Confirm password</label>
+    </div>
+    <button type="submit" class="btn">Sign up</button>
+  </form>
+  <p class="text-sm">Already have an account? <a href="{% url 'signin' %}" class="underline">Sign in</a></p>
+  <a href="{% url 'home' %}" class="underline">Back</a>
+</div>
+{% endblock %}

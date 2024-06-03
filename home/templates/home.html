@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %} Home {% endblock %}
+
+{% load static %}
+{% block content %}
+
+  <h1 class="text-5xl text-center font-bold mt-40">Casino</h1>
+  <div class="absolute-center">
+    {% if user.is_authenticated %}
+    <a href="{% url 'lobby' %}" class="main-link">
+      <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+      Play
+    </a>
+    <a href="{% url 'profile' %}" class="main-link">
+      <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+      Profile
+    </a>
+    <a href="{% url 'signout' %}" class="main-link">
+      <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+      Log out
+    </a>
+    {% else %}
+    <a href="{% url 'signin' %}" class="main-link">
+      <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+      Sign in
+    </a>
+    <a href="{% url 'signup' %}" class="main-link">
+      <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+      Sign up
+    </a>
+    {% endif %}
+  </div>
+{% endblock %}
