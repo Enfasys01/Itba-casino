@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Blackjack {% endblock %}
+
+{% block style %}
+<style>
+  .table{
+    background-color: var(--bg2);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    border-radius: 250px;
+    height: 250px;
+    width: 500px;
+  }
+
+  .hand{
+    position: absolute;
+    left: 50%;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  
+  .hand.player{
+    bottom: 0;
+    transform: translate(-50%, 50%);
+  }
+  
+  .hand.dealer{
+    top: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .card{
+    background-color: white;
+    border-radius: 10px;
+    height: 100px;
+    width: 75px;
+    font-weight: 900;
+    display: flex;
+    font-size: 30px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card.red{
+    color: var(--red);
+  }
+
+  .card.black{
+    color: var(--black);
+  }
+
+  .player-moves{
+    position: absolute;
+    bottom: -75px;
+    left: 50%;
+    transform: translate(-50%, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .player-moves form{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @keyframes animate {
+    0%{
+      opacity: 0;
+      transform: translate(0%, 50%);
+    }
+    100%{
+      opacity: 1;
+      transform: translate(0%, 0%);
+    }
+  }
+
+  .hand.animate.full .card{
+    animation: animate 1s ease-in-out;
+    opacity: 0;
+    animation-fill-mode: forwards ;
+  }
+
+  .hand.hide .card:last-child::after{
+    content: '';
+    z-index: 99;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 7px,
+      var(--bg2) 7px,
+      var(--bg2) 15px
+    );
+    background-size: 80% 85%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .hand.hide .card:last-child span{
+    display: none;
+  }
+
+  .hand.animate .card{
+    animation-fill-mode: forwards ;
+  }
+
+  input.bet-selector{
+    background-color: var(--bg2);
+    border: none;
+    border-radius: var(--round);
+    padding: 10px 20px;
+    color: var(--text);
+    font-weight: 700;
+    width: 150px;
+  }
+
+  .current-bet{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .chips{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    font-size: 25px;
+    font-weight: 500;
+    background-color: var(--bg3);
+    border-radius: var(--round);
+    padding: 10px 20px;
+  }
+
+  .chips img{
+    height: 25px;
+    width: 25px;
+  }
+
+  .player-moves .btn{
+    background-color: var(--accent);
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <div class="table">
+    <div class="relative w-full h-full">
+      <div class="hand dealer {% if state == 'start' %}animate full{% endif %} {% if state != 'dealer' %} hide {% endif %} {% if state == 'dealer' %} animate full slow {% endif %}">
+        {% for card in dealer_hand %}
+          {{ card.display|safe }}
+        {% endfor %}
+      </div>
+      <div class="current-bet">
+        {% if current_bet %}
+          Bet: {{ current_bet }}
+        {% else %}
+        {% if is_game_over %}
+            {% if result == 'win' %}
+              <h2>You win</h2>
+            {% elif result == 'lose' %}
+              <h2>You lose</h2>
+            {% else %}
+              <h2>Draw</h2>
+            {% endif %}
+            <a href="{% url 'blackjack' %}" class="main-link">
+              Play again?
+            </a>
+          {% else %}
+          Place a bet to start
+        {% endif %}
+        {% endif %}
+          </div>
+      <div class="hand player {% if state == 'start' %}animate full hide{% elif state == 'player' %} animate last {% endif %}">
+        {% for card in player_hand %}
+          {{ card.display|safe }}
+        {% endfor %}
+      </div>
+      <div class="player-moves">
+        <form method="post" class="gap-4">
+          {% csrf_token %}
+          <button class="btn" type="submit" name="action" value="hit" {% if is_game_over or not current_bet %} disabled {% endif %}>Hit</button>
+          <button class="btn" type="submit" name="action" value="stand" {% if is_game_over or not current_bet %} disabled {% endif %}>Stand</button>
+        </form>
+        {% if not current_bet %}
+        <form method="post" class="gap-2">
+          {% csrf_token %}
+          <input placeholder="Place your bet" class="bet-selector" type="number" id="bet_amount" name="bet_amount" min="1" max="{{ chips }}" required>
+          <button class="btn" type="submit" name="action" value="bet">Bet</button>
+        </form>
+        {% endif %}
+        <p class="chips">
+          <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+          {{ chips }}
+        </p>
+      </div>
+    </div>
+  </div>
+  
+
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      const listItems = document.querySelectorAll('.hand.animate.full .card');
+      listItems.forEach((item, index) => {
+        item.style.animationDelay = `${index * 0.2}s`;
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const listItems = document.querySelectorAll('.hand.animate.full.slow .card');
+      listItems.forEach((item, index) => {
+        item.style.animationDelay = `${index * 0.5}s`;
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const listItems = document.querySelectorAll('.hand.animate.last .card');
+      if(listItems.length > 1){
+        lastCard = listItems[listItems.length - 1]
+        lastCard.style.animation = 'animate 1s ease-in-out';
+      }
+    });
+  </script>
+{% endblock %}

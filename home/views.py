@@ -36,6 +36,8 @@ def signin(req):
   return render(req, 'signin.html')
 
 def lobby(req):
+  if req.method == 'POST':
+    print(req.POST)
   return render(req, 'lobby.html')
 
 def profile(req):

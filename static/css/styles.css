@@ -1,6 +1,7 @@
 :root{
   --bg: #101b23;
   --bg2: #324A5F;
+  --bg3: #090f14;
   --btn-hover: #8ea9c48a;
   --accent: #F5B319;
   --red: #9F1227;
@@ -34,6 +35,18 @@ form.form{
   align-items: center;
 }
 
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="submit"]{
+  background-color: transparent;
+  cursor: pointer;
+}
+
 form.form div.input-container{
   width: 100%;
   max-width: 250px;
@@ -49,6 +62,10 @@ form.form div.input-container{
   transition: color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
   box-shadow: 0 0 0 0 var(--bg2);
   font-weight: 600;
+}
+
+button:disabled{
+  opacity: 0.5;
 }
 
 form.form>button[type="submit"]:hover{
