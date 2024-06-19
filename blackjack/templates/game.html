@@ -63,6 +63,8 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    justify-content: center;
+    align-items: center;
   }
 
   .player-moves form{
@@ -134,19 +136,6 @@
     text-align: center;
   }
 
-  .chips{
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
-    font-size: 25px;
-    font-weight: 500;
-    background-color: var(--bg3);
-    border-radius: var(--round);
-    padding: 10px 20px;
-  }
-
   .chips img{
     height: 25px;
     width: 25px;
@@ -160,7 +149,7 @@
 {% endblock %}
 
 {% block content %}
-
+  <a href="{% url 'home' %}" class="link">Exit to menu</a>
   <div class="table">
     <div class="relative w-full h-full">
       <div class="hand dealer {% if state == 'start' %}animate full{% endif %} {% if state != 'dealer' %} hide {% endif %} {% if state == 'dealer' %} animate full slow {% endif %}">
@@ -169,9 +158,7 @@
         {% endfor %}
       </div>
       <div class="current-bet">
-        {% if current_bet %}
-          Bet: {{ current_bet }}
-        {% else %}
+        
         {% if is_game_over %}
             {% if result == 'win' %}
               <h2>You win</h2>
@@ -184,8 +171,14 @@
               Play again?
             </a>
           {% else %}
-          Place a bet to start
-        {% endif %}
+          {% if current_bet %}
+            Bet: {{ current_bet }}
+          {% elif chips > 0 %}
+            Place a bet to start
+          {% else %}
+            <h2>No chips left!</h2>
+            <a href="{% url 'buy_chips' %}" class="text-lg">Get more</a>
+          {% endif %}
         {% endif %}
           </div>
       <div class="hand player {% if state == 'start' %}animate full hide{% elif state == 'player' %} animate last {% endif %}">
@@ -199,17 +192,17 @@
           <button class="btn" type="submit" name="action" value="hit" {% if is_game_over or not current_bet %} disabled {% endif %}>Hit</button>
           <button class="btn" type="submit" name="action" value="stand" {% if is_game_over or not current_bet %} disabled {% endif %}>Stand</button>
         </form>
-        {% if not current_bet %}
+        {% if not current_bet and not is_game_over %}
         <form method="post" class="gap-2">
           {% csrf_token %}
           <input placeholder="Place your bet" class="bet-selector" type="number" id="bet_amount" name="bet_amount" min="1" max="{{ chips }}" required>
           <button class="btn" type="submit" name="action" value="bet">Bet</button>
         </form>
         {% endif %}
-        <p class="chips">
+        <div class="chips">
           <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
-          {{ chips }}
-        </p>
+          <p class="{% if is_game_over and result == 'win' or result == 'draw' %}animate-counter{% endif %}">{{ chips }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -237,5 +230,42 @@
         lastCard.style.animation = 'animate 1s ease-in-out';
       }
     });
+
+    function animateValue(element, start, end, duration) {
+      const range = end - start;
+      let startTime = null;
+  
+      function step(currentTime) {
+          if (!startTime) startTime = currentTime;
+          const progress = currentTime - startTime;
+          const progressRatio = progress / duration;
+          const easedProgress = easeInOutQuad(progressRatio);
+  
+          const currentValue = Math.floor(start + easedProgress * range);
+          element.innerHTML = currentValue;
+  
+          if (progress < duration) {
+              requestAnimationFrame(step);
+          } else {
+              element.innerHTML = end;
+          }
+      }
+  
+      requestAnimationFrame(step);
+  }
+  
+  function easeInOutQuad(t) {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    const counter = document.querySelector('.animate-counter');
+    let start = 0
+    if(parseInt('{{ chips }}') > 200){
+      start = parseInt('{{ chips }}') - 200
+    }
+    animateValue(counter, start, parseInt('{{ chips }}'), 2000); 
+  });
+
   </script>
 {% endblock %}

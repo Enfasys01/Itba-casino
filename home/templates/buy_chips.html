@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Buy Chips {% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold">Buy Chips</h1>
+<div class="chips">
+  <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+  <p class="{% if is_game_over and result == 'win' %}animate-counter{% endif %}">{{ chips }}</p>
+</div>
+
+  <form action="{% url 'buy_chips' %}" method="post" class="flex flex-wrap gap-2">
+    {% csrf_token %}
+    <button type="submit" name="buy" value="100">Buy 100</button>
+    <button type="submit" name="buy" value="250">Buy 250</button>
+    <button type="submit" name="buy" value="500">Buy 500</button>
+    <button type="submit" name="buy" value="1000">Buy 1000</button>
+  </form>
+{% endblock %}

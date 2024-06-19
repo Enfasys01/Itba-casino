@@ -1,4 +1,5 @@
 import random
+from home.models import Profile
 
 class Card:
   SUITS = ["Spades", "Hearts", "Clubs", "Diamonds"]
@@ -25,9 +26,9 @@ class Deck:
   def shuffle(self):
     random.shuffle(self.cards)
 
-  def deal(self, cheat=False):
+  def deal(self, cheat=''):
     if cheat:
-      return Card('A', 'Hearts')
+      return Card(cheat, 'Hearts')
     else:
       return self.cards.pop()
   
@@ -48,35 +49,38 @@ class Hand:
     return value
       
 class Player():
-  def __init__(self, chips = 500):
-    self.chips = chips
+  def __init__(self, profile):
+    self.profile = profile
     self.current_bet = 0
     
   def place_bet(self, amount):
-    if self.chips >= amount:
-      self.chips -= amount
+    if self.profile.chips >= amount:
+      self.profile.chips -= amount
       self.current_bet = amount
+      self.save()
   
   def win_bet(self):
-    self.chips += 2 * self.current_bet
+    self.profile.chips += 2 * self.current_bet
     self.current_bet = 0
     
   def lose_bet(self):
     self.current_bet = 0
-    print(self.chips)
     
   def push_bet(self):
-    self.chips += self.current_bet
+    self.profile.chips += self.current_bet
     self.current_bet = 0
     
+  def save(self):
+    self.profile.save()
+    
 class Game:
-  def __init__(self):
+  def __init__(self, user):
     self.deck = Deck()
     self.deck.shuffle()
-    self.player = Player()
+    self.player = Player(user.profile)
     self.player_hand = Hand()
-    self.player_hand.add_card(self.deck.deal())
-    self.player_hand.add_card(self.deck.deal())
+    self.player_hand.add_card(self.deck.deal(cheat='A'))
+    self.player_hand.add_card(self.deck.deal(cheat='J'))
     self.dealer_hand = Hand()
     self.dealer_hand.add_card(self.deck.deal())
     self.dealer_hand.add_card(self.deck.deal())
@@ -91,6 +95,8 @@ class Game:
       self.player_hand.add_card(self.deck.deal())
       if self.player_hand.get_value() > 21:
         self.game_over = True
+        self.get_result()
+        self.player.save()
 
   def stand(self):
     if self.game_over == False:
@@ -98,6 +104,9 @@ class Game:
         self.dealer_hand.add_card(self.deck.deal())
       self.game_over = True
       self.state = 'dealer'
+      self.get_result()
+      self.player.save()
+
       
   def get_result(self):
     if self.player_hand.get_value() > 21:
@@ -126,20 +135,20 @@ class Game:
       'player_value': self.player_hand.get_value() if self.player_hand else 0,
       'dealer_value': self.dealer_hand.get_value() if self.dealer_hand else 0,
       'game_over': self.game_over,
-      'chips':self.player.chips,
+      'chips':self.player.profile.chips,
       'current_bet': self.player.current_bet,
       'state': self.state
     }
 
   @staticmethod
-  def deserialize(data):
-    game = Game()
+  def deserialize(data, user):
+    game = Game(user)
     game.player_hand.cards = [Card(rank, suit) for rank, suit in data.get('player_hand', [])]
     game.dealer_hand.cards = [Card(rank, suit) for rank, suit in data.get('dealer_hand', [])]
     game.player_hand.value = data.get('player_value', 0)
     game.dealer_hand.value = data.get('dealer_value', 0)
     game.game_over = data.get('game_over', False)
-    game.player.chips = data.get('chips', 500)
+    game.player.profile.chips = data.get('chips', 500)
     game.player.current_bet = data.get('current_bet', 0)
     game.state = data.get('state', 'player')
     return game

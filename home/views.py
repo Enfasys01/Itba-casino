@@ -46,3 +46,19 @@ def profile(req):
 def signout(req):
   logout(req)
   return render(req, 'home.html')
+
+def buy_chips(req):
+  if req.method == 'POST':
+    if req.POST['buy'] == '100':
+      req.user.profile.chips += 100
+    elif req.POST['buy'] == '250':
+      req.user.profile.chips += 250
+    elif req.POST['buy'] == '500':
+      req.user.profile.chips += 500
+    elif req.POST['buy'] == '1000':
+      req.user.profile.chips += 1000
+    req.user.profile.save()
+    
+  return render(req, 'buy_chips.html',{
+    "chips": req.user.profile.chips
+  })

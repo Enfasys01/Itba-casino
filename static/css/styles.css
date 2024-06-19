@@ -15,6 +15,7 @@ body {
   font-optical-sizing: auto;
   font-weight: 200;
   font-style: normal;
+  padding: 20px 0;
 }
 
 body{
@@ -156,5 +157,24 @@ div.input-container>input:focus + label {
   color: var(--text);
 }
 
+.chips{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  font-size: 25px;
+  font-weight: 500;
+  background-color: var(--bg3);
+  border-radius: var(--round);
+  padding: 10px 20px;
+  width: fit-content;
+}
 
+.link{
+  transition: color 0.25s ease;
+}
 
+.link:hover{
+  color: var(--accent);
+}
