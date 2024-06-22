@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %} Leaderboard {% endblock %}
+
+{% block style %}
+<style>
+
+  .leaderboard{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    border-bottom: solid 2px var(--bg2);
+  }
+
+  .leaderboard:first-of-type{
+    border-top: solid 2px var(--bg2);
+  }
+
+  .leaderboard span:nth-child(1){
+    color:var(--accent);
+  }
+  .leaderboard span:nth-child(2){
+    font-weight: 600;
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'home' %}" class="link">Go back</a>
+  <h1 class="text-3xl font-bold mt-30 mb-10">Leaderboard</h1>
+
+  {% for u in users %}
+    <div class="leaderboard">
+      <span>{{ forloop.counter }}.</span>
+      <span>{{ u.username }} {% if u == user %} (you){% endif %}</span>
+      <span class="flex gap-2 items-center">{{ u.profile.chips }} <img src="{% static 'svg/chip.svg' %}" alt="SVG Image"></span>
+    </div>
+  {% endfor %}
+
+{% endblock %}

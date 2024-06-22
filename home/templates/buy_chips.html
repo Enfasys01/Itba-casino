@@ -2,18 +2,42 @@
 {% load static %}
 {% block title %} Buy Chips {% endblock %}
 
+{% block style %}
+<style>
+  .buy-chips{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    border: solid 2px var(--bg2);
+    border-radius: var(--round);
+    padding: 10px 20px;
+    font-size: 20px;
+    transition: 250ms;
+  }
+
+  .buy-chips:hover{
+    background-color: var(--bg3);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
+<a href="{% url 'home' %}" class="link">Go back</a>
 <h1 class="text-3xl font-bold">Buy Chips</h1>
-<div class="chips">
-  <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
-  <p class="{% if is_game_over and result == 'win' %}animate-counter{% endif %}">{{ chips }}</p>
+<div class="flex my-4 items-center gap-4">
+  <p class="text-2xl">Your chips: </p>
+  <div class="chips">
+    <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+    <p class="{% if is_game_over and result == 'win' %}animate-counter{% endif %}">{{ chips }}</p>
+  </div>
 </div>
 
   <form action="{% url 'buy_chips' %}" method="post" class="flex flex-wrap gap-2">
     {% csrf_token %}
-    <button type="submit" name="buy" value="100">Buy 100</button>
-    <button type="submit" name="buy" value="250">Buy 250</button>
-    <button type="submit" name="buy" value="500">Buy 500</button>
-    <button type="submit" name="buy" value="1000">Buy 1000</button>
+    <button type="submit" name="buy" value="100" class="buy-chips"><img src="{% static 'svg/chip.svg' %}" alt="SVG Image"> Buy 100</button>
+    <button type="submit" name="buy" value="250" class="buy-chips"><img src="{% static 'svg/chip.svg' %}" alt="SVG Image"> Buy 250</button>
+    <button type="submit" name="buy" value="500" class="buy-chips"><img src="{% static 'svg/chip.svg' %}" alt="SVG Image"> Buy 500</button>
+    <button type="submit" name="buy" value="1000" class="buy-chips"><img src="{% static 'svg/chip.svg' %}" alt="SVG Image"> Buy 1000</button>
   </form>
 {% endblock %}

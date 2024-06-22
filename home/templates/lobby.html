@@ -6,8 +6,14 @@
 {% block content %}
 
   <div class="absolute-center">
-    <a href="{% url 'blackjack' %}" class="">
+    <a href="{% url 'blackjack' %}" class="main-link">
       Black jack
+    </a>
+    <a href="{% url 'poker' %}" class="main-link">
+      Poker
+    </a>
+    <a href="{% url 'buy_chips' %}" class="main-link" style="font-size: 15px; max-width: 200px;">
+      Buy chips
     </a>
   </div>
 {% endblock %}

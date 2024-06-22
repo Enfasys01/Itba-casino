@@ -1,3 +1,4 @@
+from .models import Profile
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
@@ -41,7 +42,17 @@ def lobby(req):
   return render(req, 'lobby.html')
 
 def profile(req):
-  return render(req, 'profile.html')
+  all_profiles = Profile.objects.all().order_by('-chips')
+  for p in all_profiles:
+    print(p.user_id)
+
+  for rank, item in enumerate(list(all_profiles)):
+    if item.id == req.user.id:
+      break
+  
+  return render(req, 'profile.html',{
+    'rank': rank
+  })
 
 def signout(req):
   logout(req)
@@ -61,4 +72,10 @@ def buy_chips(req):
     
   return render(req, 'buy_chips.html',{
     "chips": req.user.profile.chips
+  })
+  
+def leaderboard(req):
+  users = User.objects.all().order_by('-profile__chips')
+  return render(req, 'leaderboard.html',{
+    "users": users
   })

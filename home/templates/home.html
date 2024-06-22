@@ -5,29 +5,49 @@
 {% load static %}
 {% block content %}
 
-  <h1 class="text-5xl text-center font-bold mt-40">Casino</h1>
+  <h1 class="text-5xl text-center font-bold  mt-32">Casino</h1>
+  {% if user.is_authenticated %}
+    <p class="text-center mt-5">Welcome, {{ user.username }}!</p>
+
+  {% endif %}
   <div class="absolute-center">
     {% if user.is_authenticated %}
     <a href="{% url 'lobby' %}" class="main-link">
       <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
-      Play
+      <span>
+        Play
+      </span>
     </a>
     <a href="{% url 'profile' %}" class="main-link">
       <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
-      Profile
+      <span>
+        Profile
+      </span>
+    </a>
+    <a href="{% url 'leaderboard' %}" class="main-link">
+      <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+      <span>
+        Leaderboard
+      </span>
     </a>
     <a href="{% url 'signout' %}" class="main-link">
       <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
-      Log out
+      <span>
+        Log out
+      </span>
     </a>
     {% else %}
     <a href="{% url 'signin' %}" class="main-link">
       <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
-      Sign in
+      <span>
+        Sign in
+      </span>
     </a>
     <a href="{% url 'signup' %}" class="main-link">
       <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
-      Sign up
+      <span>
+        Sign up
+      </span>
     </a>
     {% endif %}
   </div>

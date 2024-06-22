@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %} Profile {% endblock %}
+
+{% block content %}
+
+  <a href="{% url 'home' %}" class="link">Go back</a>
+
+  <h1 class="text-5xl text-center font-bold mt-30">Profile</h1>
+
+  <div class="box-container mt-10 max-w-lg mx-auto text-lg">
+    <p>Username: {{ user.username }}</p>
+    <p>Email: {{ user.email }}</p>
+    <p>Rank: {{ rank }}</p>
+    <p>Chips: {{ user.profile.chips }}</p>
+  </div>
+
+{% endblock %}

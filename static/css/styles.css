@@ -15,7 +15,7 @@ body {
   font-optical-sizing: auto;
   font-weight: 200;
   font-style: normal;
-  padding: 20px 0;
+  padding: 20px;
 }
 
 body{
@@ -83,12 +83,24 @@ input:focus{
 }
 
 a.main-link {
+  text-align: center;
   display: flex;
-  justify-items: center;
+  justify-content: center;
   gap: 10px;
   transition: 250ms linear color;
   color: var(--text);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  background-color: var(--bg3);
+  border-radius: var(--round);
+  padding: 10px 20px;
+  border: solid 2px var(--bg2);
+  width: 100%;
+  max-width: 300px;
+}
+
+a.main-link>span {
+  width: 100%;
+  transform: translateX(-15px);
 }
 
 a.main-link:hover {
@@ -122,6 +134,7 @@ a.main-link>img {
   border: solid 2px var(--bg2);
   border-radius: var(--round);
   padding: 30px 50px;
+  background-color: var(--bg3);
 }
 
 div.input-container {

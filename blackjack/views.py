@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 from .blackjack import Game
 
-def play_game(req):
+def play(req):
   game = Game(req.user)
   req.session['game'] = game.serialize()
   return redirect('play')
 
-def play(req):
+def play_game(req):
   game = Game.deserialize(req.session.get('game'), req.user)
 
   if req.method == "POST":
