@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load mathfilters %}
 {% load static %}
 
 {% block title %} Poker {% endblock %}
@@ -238,6 +239,23 @@
     animation-fill-mode: forwards;
   }
 
+  @keyframes deal {
+    from{
+      transform: translateY(-50%);
+      opacity: 0;
+    }
+    to{
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .cards.deal .card{
+    opacity: 0;
+    animation: deal 1s ease-in-out;
+    animation-fill-mode: forwards;
+  }
+
 </style>
 {% endblock %}
 
@@ -264,10 +282,60 @@
     const sliderValue = document.getElementById('slider-value');
     sliderValue.textContent = value;
   }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const listItems = document.querySelectorAll('.hand .cards.deal .card');
+    listItems.forEach((item, index) => {
+      item.style.animationDelay = `${index * 0.2}s`;
+    });
+
+    const preflop = document.querySelectorAll('.table-cards .cards.deal.preflop .card');
+    preflop.forEach((item, index) => {
+      item.style.animationDelay = `${index * 0.2}s`;
+    });
+
+    /*
+    const flop = document.querySelectorAll('.table-cards .cards.deal.flop .card');
+    console.log(flop)
+    if (flop.length){
+      for (let i = 0; i < 3; i++) {
+        flop[i].style.animationDelay = `${i * 0.2}s`;
+      }
+      for (let i = 3; i < 5; i++) {
+        flop[i].style.animation = 'none';
+        flop[i].style.opacity = 1;
+      }
+    }
+
+    const turn = document.querySelectorAll('.table-cards .cards.deal.turn .card');
+    
+    if (turn.length){
+      console.log(turn)
+      turn.splice(3, 1);
+      console.log(turn)
+      turn.forEach((item, index) => {
+        item.style.animation = 'none';
+        item.style.opacity = 1;
+      });
+    } 
+
+
+    const river = document.querySelectorAll('.table-cards .cards.deal.river .card');
+    if(river.length){
+      river.forEach((item, index) => {
+        item.style.animationDelay = 'none';
+        item.style.opacity = 1;
+      });
+    }
+    */
+
+  });
 </script>
 
-<a href="{% url 'home' %}" class="link">Exit to menu</a>
-<a href="{% url 'poker' %}" class="link">Reload</a>
+<a href="{% url 'home' %}" class="link">Exit to menu</a> </br>
+<a href="{% url 'poker' %}">Reload</a>
+<p>State: {{ state }}</p>
+<p>Current bet: {{ game_bet }}</p>
 
 <div class="table">
   <div class="relative w-full h-full">
@@ -275,9 +343,8 @@
       <div class="chips bot">
         <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
         <p>{{ bot.chips }}</p>
-        <p>{{ bot.score }}%</p>
       </div>
-      <div class="cards {% if state == 'bot_fold' %}fold{% endif %}">
+      <div class="cards {% if state == 'bot_fold' %}fold{% endif %} {% if state == 'preflop' %}deal{% endif %}">
         {% for card in bot.hand %}
         {{ card.display|safe }}
         {% endfor %}
@@ -285,8 +352,8 @@
       <p class="flex gap-2"><img src="{% static 'svg/chip.svg' %}" alt="SVG Image"> {{ bot.bet }}</p>
     </div>
 
-    <div class="table-cards">
-      <div class="cards">
+    <div class="table-cards" id="table-cards">
+      <div class="cards deal {{state}}">
         {% for card in cards %}
         {{ card.display|safe }}
         {% endfor %}
@@ -311,7 +378,7 @@
     <div class="hand player">
       <p>{{ player.name }}</p>
       <p class="flex gap-2"><img src="{% static 'svg/chip.svg' %}" alt="SVG Image"> {{ player.bet }}</p>
-      <div class="cards {% if state == 'player_fold' %}fold{% endif %}">
+      <div class="cards {% if state == 'player_fold' %}fold{% endif %} {% if state == 'preflop' %}deal{% endif %}">
         {% for card in player.hand %}
         {{ card.display|safe }}
         {% endfor %}
@@ -337,8 +404,8 @@
           <div class="flex flex-row gap-2" id="player-buttons">
             <!-- <input placeholder="Place your bet" class="bet-selector" type="number" id="bet_amount" name="bet_amount" min="1" max="{{ chips }}" value="{{blind}}" required> -->
             <button class="btn" type="button" onclick="toggleRaise()">Raise</button>
-            {% if game_bet %}
-            <button class="btn" type="submit" name="action" value="call">Call ({{ game_bet }})</button>
+            {% if game_bet and game_bet|sub:player.bet != 0 %}
+            <button class="btn" type="submit" name="action" value="call">Call ({{ game_bet|sub:player.bet }})</button>
             {% else %}
             <button class="btn" type="submit" name="action" value="check">Check</button>
             {% endif %}

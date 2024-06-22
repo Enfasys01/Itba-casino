@@ -68,9 +68,9 @@ class Player():
     if self.chips >= amount:
       self.chips -= amount
       self.current_bet += amount
-      if self.profile:
-        self.profile.chips -= amount
-        #self.profile.save()
+      # if self.profile:
+        # self.profile.chips -= amount
+        # self.profile.save()
         
 class Bot(Player):
   def __init__(self, chips):
@@ -81,12 +81,19 @@ class Bot(Player):
     lucky = random.choice([True, False])
     
     def call():
+      print('bot called')
       self.bet(current_bet - self.current_bet)
+      
+    def raise_():
+      print('bot raised ', 20)
+      self.bet(current_bet + 20)
     
     if current_bet == self.current_bet:
       if lucky:
-        self.bet(int(round(self.chips * 0.2 / 10) * 10))
-        print('bot raised')
+        # raise_ = int(round(self.chips * 0.2 / 10) * 10)
+        # self.bet(raise_)
+        # print('bot raised ', raise_)
+        raise_()
         return 'raise'
       else:
         print('bot checked')
@@ -96,7 +103,6 @@ class Bot(Player):
       return 'fold'
     elif score < 30:
       if current_bet < self.chips*0.2:
-        print('bot called')
         call()
         return 'call'
       else:
@@ -104,7 +110,6 @@ class Bot(Player):
         return 'fold'
     elif score < 60:
       if current_bet < self.chips * 0.5:
-        print('bot called')
         call()
         return 'call'
       else:
@@ -112,15 +117,16 @@ class Bot(Player):
         return 'fold'
     elif score < 80:
       if current_bet < self.chips * 0.8:
-        print('bot called')
         call()
         return 'call'
       else:
         print('bot folded')
         return 'fold'
     else:
-      self.bet(self.chips * 0.3)
-      print('bot raised')
+      raise_()
+      # raise_ = int(round(self.chips * 0.5 / 10) * 10)
+      # self.bet(raise_)
+      # print('bot raised ', raise_)
       return 'raise'
   
 class Game():
@@ -140,12 +146,13 @@ class Game():
     self.game_over = False
     self.round = 1
     self.dealer = 'bot'
+    self.last_action = 'start'
     
     self.bot.bet(self.blind)
     
   def manage_bot(self, bot_play):
     if bot_play == 'fold':
-      self.player.chips += self.pot
+      self.player.chips += self.pot + self.player.current_bet + self.bot.current_bet
       self.player.current_bet = 0
       self.bot.current_bet = 0
       self.pot = 0
@@ -159,6 +166,8 @@ class Game():
     elif bot_play == 'raise':
       self.bet = self.bot.current_bet
     
+    self.last_action = 'bot_' + bot_play
+    
   def fold(self):
     self.bot.chips += self.pot + self.bot.current_bet + self.player.current_bet
     self.player.current_bet = 0
@@ -168,29 +177,25 @@ class Game():
     
   def call(self):
     self.player.bet(self.bet)
-    self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
-    
-    self.pot += self.player.current_bet + self.bot.current_bet
-    
-    self.player.current_bet = 0
-    self.bot.current_bet = 0
-    self.bet = 0
-    
-    self.deal_table()
+    if(self.last_action != 'start'):
+      self.last_action = 'player_call'
+      self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
+    else:
+      self.last_action = 'player_call'
+      self.pot += self.bot.current_bet + self.player.current_bet
+      self.player.current_bet = 0
+      self.bot.current_bet = 0
+      self.bet = 0
+      self.deal_table()
     
   def check(self):
+    self.last_action = 'player_check'
     self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
 
   def raise_(self, amount):
     self.player.bet(amount)
+    self.last_action = 'player_raise'
     self.manage_bot(self.bot.play(self.get_bot_score(), amount))
-    # self.bot.bet(amount - self.bot.current_bet)
-    # self.bet = amount
-    # self.pot += self.player.current_bet + self.bot.current_bet
-    # self.player.current_bet = 0
-    # self.bot.current_bet = 0
-    # self.bet = 0
-    # self.deal_table()
 
   def deal_players(self):
     self.player.hand = Hand()
@@ -250,7 +255,6 @@ class Game():
     if self.round%2 == 0:
       self.dealer = 'player'
       self.player.bet(self.blind)
-      self.manage_bot(self.bot.play(self.get_bot_score(), self.blind))
     else:
       self.dealer = 'bot'
       self.bot.bet(self.blind)

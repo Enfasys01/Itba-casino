@@ -46,7 +46,6 @@ def play(req):
     'state': game.state,
     'game_bet': game.bet,
     'winner': winner,
-    'dealer': game.dealer
   }
   
   # print('context',context)
