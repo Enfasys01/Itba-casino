@@ -1,4 +1,6 @@
+from os import access
 import random
+from more_itertools import last
 from pokereval.card import Card as PECard
 from pokereval.hand_evaluator import HandEvaluator
 
@@ -68,9 +70,9 @@ class Player():
     if self.chips >= amount:
       self.chips -= amount
       self.current_bet += amount
-      # if self.profile:
-        # self.profile.chips -= amount
-        # self.profile.save()
+      if self.profile:
+        self.profile.chips -= amount
+        self.profile.save()
         
 class Bot(Player):
   def __init__(self, chips):
@@ -79,55 +81,78 @@ class Bot(Player):
   def play(self, score, current_bet=0):
     
     lucky = random.choice([True, False])
+    liar = random.choice([True, False])
+    lie = random.choice([True, False])
+    if liar:
+      lie = random.choice([True, True, False])
+      
+    def rate_score():
+      # criteria = {}
+      if score < 15:
+        return 'very_bad'
+      elif score < 30:
+        return 'bad'
+      elif score < 50:
+        return 'ok'
+      elif score < 80:
+        return 'good'
+      else:
+        return 'very_good'
+      
+    print('bot score', rate_score())
     
     def call():
       print('bot called')
       self.bet(current_bet - self.current_bet)
       
     def raise_():
-      print('bot raised ', 20)
-      self.bet(current_bet + 20)
-    
-    if current_bet == self.current_bet:
+      amount = 0
+      if rate_score() == 'very_bad':
+        amount = int(round((random.uniform(.05, .2) * self.chips) / 10.0) * 10)
+      elif rate_score() == 'bad':
+        amount = int(round((random.uniform(.1, .3) * self.chips) / 10.0) * 10)
+      elif rate_score() == 'ok':
+        amount = int(round((random.uniform(.2, .5) * self.chips) / 10.0) * 10)
+      elif rate_score() == 'good':
+        amount = int(round((random.uniform(.4, .6) * self.chips) / 10.0) * 10)
+      elif rate_score() == 'very_good':
+        amount = int(round((random.uniform(.4, .8) * self.chips) / 10.0) * 10)
+      print('bot raised ', amount)
+      self.bet(current_bet + amount)
+      
+    if rate_score() == 'very_bad' or rate_score() == 'bad':
       if lucky:
-        # raise_ = int(round(self.chips * 0.2 / 10) * 10)
-        # self.bet(raise_)
-        # print('bot raised ', raise_)
+        if lie:
+          raise_()
+          return 'raise'
+        else:
+          call()
+          return 'call'
+      else:
+        if current_bet == self.current_bet:
+          call()
+          return 'call'
+        else:
+          print('bot folded')
+          return 'fold'
+    elif rate_score() == 'ok' or rate_score() == 'good':
+      if lucky:
+        if lie:
+          call()
+          return 'call'
+        else:
+          raise_()
+          return 'raise'
+      else:
+        call()
+        return 'call'
+    elif rate_score() == 'very_good':
+      if lie:
+        call()
+        return 'call'
+      else:
         raise_()
         return 'raise'
-      else:
-        print('bot checked')
-        return 'check'
-    elif score < 15:
-      print('bot folded')
-      return 'fold'
-    elif score < 30:
-      if current_bet < self.chips*0.2:
-        call()
-        return 'call'
-      else:
-        print('bot folded')
-        return 'fold'
-    elif score < 60:
-      if current_bet < self.chips * 0.5:
-        call()
-        return 'call'
-      else:
-        print('bot folded')
-        return 'fold'
-    elif score < 80:
-      if current_bet < self.chips * 0.8:
-        call()
-        return 'call'
-      else:
-        print('bot folded')
-        return 'fold'
-    else:
-      raise_()
-      # raise_ = int(round(self.chips * 0.5 / 10) * 10)
-      # self.bet(raise_)
-      # print('bot raised ', raise_)
-      return 'raise'
   
 class Game():
   def __init__(self, user):
@@ -155,16 +180,20 @@ class Game():
       self.player.chips += self.pot + self.player.current_bet + self.bot.current_bet
       self.player.current_bet = 0
       self.bot.current_bet = 0
+      self.bet = 0
       self.pot = 0
       self.state= 'bot_fold'
+      return 'fold'
     elif bot_play == 'call' or bot_play == 'check':
       self.bet = 0
       self.pot += self.player.current_bet + self.bot.current_bet
       self.player.current_bet = 0
       self.bot.current_bet = 0
       self.deal_table()
+      return 'call'
     elif bot_play == 'raise':
       self.bet = self.bot.current_bet
+      return 'raise'
     
     self.last_action = 'bot_' + bot_play
     
@@ -177,9 +206,14 @@ class Game():
     
   def call(self):
     self.player.bet(self.bet)
-    if(self.last_action != 'start'):
+    if(self.last_action != 'start' and self.last_action != 'player_call' and self.last_action != 'player_check'):
       self.last_action = 'player_call'
-      self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
+      action = self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
+      
+      if action == 'raise' or action == 'fold':
+        return False
+      else:
+        return True
     else:
       self.last_action = 'player_call'
       self.pot += self.bot.current_bet + self.player.current_bet
@@ -187,15 +221,28 @@ class Game():
       self.bot.current_bet = 0
       self.bet = 0
       self.deal_table()
+      return True
     
   def check(self):
-    self.last_action = 'player_check'
-    self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
+    if self.last_action == 'bot_raise':
+      return False
+    else:
+      action = self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
+      self.last_action = 'player_check'
+      if action == 'raise' or action == 'fold':
+        return False
+      else:
+        return True
+    
 
   def raise_(self, amount):
     self.player.bet(amount)
+    action = self.manage_bot(self.bot.play(self.get_bot_score(), amount))
     self.last_action = 'player_raise'
-    self.manage_bot(self.bot.play(self.get_bot_score(), amount))
+    if action == 'raise' or action == 'fold':
+      return False
+    else:
+      return True
 
   def deal_players(self):
     self.player.hand = Hand()
@@ -292,7 +339,8 @@ class Game():
       'state': self.state,
       'bet': self.bet,
       'round': self.round,
-      'dealer': self.dealer
+      'dealer': self.dealer,
+      'last_action': self.last_action
     }  
   
   def deserialize(data, user):
@@ -312,6 +360,7 @@ class Game():
     game.bet = data.get('bet', 0)
     game.round = data.get('round', 1)
     game.dealer = data.get('dealer')
+    game.last_action = data.get('last_action', 'start')
     
     game.cards = [Card(rank, suit) for rank, suit in data.get('cards', [])]
     return game

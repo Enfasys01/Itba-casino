@@ -11,6 +11,8 @@ def play(req):
   
   winner = None
 
+  deal = True
+
   if game.state == 'preflop': game.bet = game.blind
   
   if req.method == "POST":
@@ -18,24 +20,24 @@ def play(req):
     if action == 'fold':
       print('player folded')
       game.fold()
+      deal = False
     elif action == 'raise':
       print('player raised', req.POST.get('raise'))
-      game.raise_(int(req.POST.get('raise')))
+      deal = game.raise_(int(req.POST.get('raise')))
     elif action == 'call':
       print('player called', game.bet)
-      game.call()
+      deal = game.call()
     elif action == 'check':
       print('player checked')
-      game.check()
+      deal = game.check()
     elif action == 'next_round':
       game.new_round()
-      
-    if game.state == 'end': winner = game.get_round_winner()
+      deal = True
+    if game.state == 'end':
+      winner = game.get_round_winner()
+      deal = False
     
     req.session['game'] = game.serialize()
-    
-    
-  
 
   context = {
     'player': {'chips': game.player.chips, 'hand': game.player.hand.cards, 'bet': game.player.current_bet, 'score': game.get_player_score()},
@@ -46,6 +48,7 @@ def play(req):
     'state': game.state,
     'game_bet': game.bet,
     'winner': winner,
+    'deal': deal
   }
   
   # print('context',context)
