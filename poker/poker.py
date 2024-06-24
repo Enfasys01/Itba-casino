@@ -1,5 +1,7 @@
+from operator import ge
 from os import access
 import random
+from time import process_time_ns
 from more_itertools import last
 from pokereval.card import Card as PECard
 from pokereval.hand_evaluator import HandEvaluator
@@ -11,7 +13,18 @@ class Card:
   COLORS = {"Spades":"black", "Hearts":"red", "Clubs":"black", "Diamonds":"red"}
   SYMBOLS = {"Spades":"♠", "Hearts":"♥", "Clubs":"♣", "Diamonds":"♦"}
   def __init__(self, rank, suit):
-    self.rank = rank
+    def get_rank():
+      if rank == 14:
+        return 'A'
+      elif rank == 13:
+        return 'K'
+      elif rank == 12:
+        return 'Q'
+      elif rank == 11:
+        return 'J'
+      else:
+        return rank
+    self.rank = get_rank()
     self.suit = suit
 
   def __str__(self):
@@ -30,7 +43,19 @@ class Card:
         return 3
       elif suit == 'Clubs':
         return 4
-    return (self.VALUES[self.rank], get_suit(self.suit))
+    # print(self.VALUES[self.rank], self.suit, self.rank)
+    def get_rank(rank):
+      if rank == 14:
+        return 'A'
+      elif rank == 13:
+        return 'K'
+      elif rank == 12:
+        return 'Q'
+      elif rank == 11:
+        return 'J'
+      else:
+        return rank
+    return (self.VALUES[str(get_rank(self.rank))], get_suit(self.suit))
 
 class Deck:
   def __init__(self):
@@ -47,6 +72,14 @@ class Deck:
       return Card(cheat, 'Hearts')
     else:
       return self.cards.pop()
+    
+  def serialize(self):
+    return [card.serialize() for card in self.cards]
+  
+  def deserialize(cards):
+    deck = Deck()
+    deck.cards = [Card(card[0], Card.SUITS[card[1]-1]) for card in cards]
+    return deck
     
 class Hand:
   def __init__(self):
@@ -74,11 +107,16 @@ class Player():
         self.profile.chips -= amount
         self.profile.save()
         
+  def win_bet(self, amount):
+    if self.profile:
+        self.profile.chips += amount
+        self.profile.save()
+        
 class Bot(Player):
   def __init__(self, chips):
     super().__init__(chips)
     
-  def play(self, score, current_bet=0):
+  def play(self, score, game):
     
     lucky = random.choice([True, False])
     liar = random.choice([True, False])
@@ -103,7 +141,7 @@ class Bot(Player):
     
     def call():
       print('bot called')
-      self.bet(current_bet - self.current_bet)
+      self.bet(game.bet - self.current_bet)
       
     def raise_():
       amount = 0
@@ -116,20 +154,36 @@ class Bot(Player):
       elif rate_score() == 'good':
         amount = int(round((random.uniform(.4, .6) * self.chips) / 10.0) * 10)
       elif rate_score() == 'very_good':
-        amount = int(round((random.uniform(.4, .8) * self.chips) / 10.0) * 10)
-      print('bot raised ', amount)
-      self.bet(current_bet + amount)
+        amount = int(round((random.uniform(.5, 1) * self.chips) / 10.0) * 10)
+      
+      if amount == 0:
+        if self.chips != 0:
+          amount = self.chips
+        else:
+          print('bot called')
+          return 'call'
+      
+      if game.player.chips == 0:
+        print('bot called')
+        return 'call'
+      elif amount + game.bet > game.player.chips:
+        print('bot raised ', game.player.chips)
+        self.bet(game.player.chips + game.bet)
+        return 'raise'
+      else:
+        print('bot raised ', amount)
+        self.bet(game.bet + amount)
+        return 'raise'
       
     if rate_score() == 'very_bad' or rate_score() == 'bad':
       if lucky:
         if lie:
-          raise_()
-          return 'raise'
+          return raise_()
         else:
           call()
           return 'call'
       else:
-        if current_bet == self.current_bet:
+        if game.bet == self.current_bet:
           call()
           return 'call'
         else:
@@ -141,8 +195,7 @@ class Bot(Player):
           call()
           return 'call'
         else:
-          raise_()
-          return 'raise'
+          return raise_()
       else:
         call()
         return 'call'
@@ -151,17 +204,15 @@ class Bot(Player):
         call()
         return 'call'
       else:
-        raise_()
-        return 'raise'
-  
+        return raise_()
+
 class Game():
   def __init__(self, user):
     self.deck = Deck()
     self.deck.shuffle()
-    self.player = Player(chips=user.profile.chips, profile = user.profile)
-    self.bot = Bot(chips=1000)
+    self.player = Player(chips=500, profile = user.profile)
+    self.bot = Bot(chips=500)
     self.deal_players()
-    
     
     self.pot = 0
     self.cards = []
@@ -208,7 +259,7 @@ class Game():
     self.player.bet(self.bet)
     if(self.last_action != 'start' and self.last_action != 'player_call' and self.last_action != 'player_check'):
       self.last_action = 'player_call'
-      action = self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
+      action = self.manage_bot(self.bot.play(self.get_bot_score(), self))
       
       if action == 'raise' or action == 'fold':
         return False
@@ -227,17 +278,17 @@ class Game():
     if self.last_action == 'bot_raise':
       return False
     else:
-      action = self.manage_bot(self.bot.play(self.get_bot_score(), self.bet))
+      action = self.manage_bot(self.bot.play(self.get_bot_score(), self))
       self.last_action = 'player_check'
       if action == 'raise' or action == 'fold':
         return False
       else:
         return True
     
-
   def raise_(self, amount):
     self.player.bet(amount)
-    action = self.manage_bot(self.bot.play(self.get_bot_score(), amount))
+    self.bet = amount
+    action = self.manage_bot(self.bot.play(self.get_bot_score(), self))
     self.last_action = 'player_raise'
     if action == 'raise' or action == 'fold':
       return False
@@ -275,11 +326,11 @@ class Game():
     bot_score = HandEvaluator.evaluate_hand(bot_hand, board)
     
     if player_score > bot_score:
+      self.player.win_bet(self.pot)
       return 'player'
     elif player_score < bot_score:
       return 'bot'
         
-  
   def end_round(self):
     result = self.get_round_winner()
     
@@ -297,6 +348,7 @@ class Game():
     self.bet = self.blind
     self.round += 1
     self.cards = []
+    self.deck = Deck()
     self.deal_players()
     
     if self.round%2 == 0:
@@ -316,13 +368,19 @@ class Game():
     hand = [PECard(card.serialize()[0], card.serialize()[1]) for card in self.player.hand.cards]
     board = [PECard(card.serialize()[0], card.serialize()[1]) for card in self.cards]
     
-    return round(HandEvaluator.evaluate_hand(hand, board) * 100)
+    try:
+      return round(HandEvaluator.evaluate_hand(hand, board) * 100)
+    except:
+      print('woops',hand, board)
+      return 0
     
   def serialize(self):
     def serialize_cards(cards):
       return [(card.rank, card.suit) for card in cards]
-        
+    # for card in self.deck.cards:
+    #   print('CARD',card.serialize())
     return{
+      'deck': self.deck.serialize(),
       'player': {
         'chips': self.player.chips,
         'hand': serialize_cards(self.player.hand.cards),
@@ -340,12 +398,13 @@ class Game():
       'bet': self.bet,
       'round': self.round,
       'dealer': self.dealer,
-      'last_action': self.last_action
+      'last_action': self.last_action,
     }  
   
   def deserialize(data, user):
-    # print('deserializing', data)
+    # print('deserializing', data.get('deck', []))
     game = Game(user)
+    game.deck = Deck.deserialize(cards=data.get('deck', []))
     
     game.player = Player(chips=data.get('player')['chips'], profile = user.profile)
     game.player.set_hand(data.get('player', {}).get('hand', []))

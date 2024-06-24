@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
 from .poker import Game
 def play_game(req):
-  game = Game(req.user)
-  req.session['game'] = game.serialize()
-  return redirect('play_poker')
+  if req.user.profile.chips <= 500:
+    return redirect('home')
+  else:
+    game = Game(req.user)
+    req.session['game'] = game.serialize()
+    return redirect('play_poker')
 
 def play(req):
   # print('play',req.session.get('game'))

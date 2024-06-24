@@ -384,22 +384,30 @@
         <form method="post" class="gap-2">
         {% csrf_token %}
         {% if state == 'end' %}
-        <p class="flex-auto">{% if winner == 'player' %}You win{% elif winner == 'bot' %}Bot wins{% else %}Draw{% endif %}</p>
-        <button class="btn" type="submit" name="action" value="next_round">Next round</button>
+          {% if player.chips == 0 %}
+            <p>You lose</p>
+            <a class="btn" href="{% url 'poker' %}">Start new game</a>
+          {% elif bot.chips == 0 %}
+            <p>You win</p>
+            <a class="btn" href="{% url 'poker' %}">Start new game</a>
+          {% else %}
+            <p class="flex-auto">{% if winner == 'player' %}You win{% elif winner == 'bot' %}Bot wins{% else %}Draw{% endif %}</p>
+            <button class="btn" type="submit" name="action" value="next_round">Next round</button>
+          {% endif %}  
         {% elif state == 'player_fold' %}
-        <p class="flex-1">Bot wins</p>
-        <button class="btn" type="submit" name="action" value="next_round">Next round</button>
+          <p class="flex-1">Bot wins</p>
+          <button class="btn" type="submit" name="action" value="next_round">Next round</button>
         {% elif state == 'bot_fold' %}
-        <p>You win</p>
-        <button class="btn" type="submit" name="action" value="next_round">Next round</button>
+          <p>You win</p>
+          <button class="btn" type="submit" name="action" value="next_round">Next round</button>
         {% else %}
           <div class="flex flex-row gap-2" id="player-buttons">
             <!-- <input placeholder="Place your bet" class="bet-selector" type="number" id="bet_amount" name="bet_amount" min="1" max="{{ chips }}" value="{{blind}}" required> -->
             <button class="btn" type="button" onclick="toggleRaise()">Raise</button>
             {% if game_bet and game_bet|sub:player.bet != 0 %}
-            <button class="btn " type="submit" name="action" value="call"><p class="inline-block whitespace-nowrap text-nowrap">Call ({{ game_bet|sub:player.bet }})</p></button>
+              <button class="btn " type="submit" name="action" value="call"><p class="inline-block whitespace-nowrap text-nowrap">Call ({{ game_bet|sub:player.bet }})</p></button>
             {% else %}
-            <button class="btn" type="submit" name="action" value="check">Check</button>
+              <button class="btn" type="submit" name="action" value="check">Check</button>
             {% endif %}
             <button class="btn" type="submit" name="action" value="fold">Fold</button>
           </div>
