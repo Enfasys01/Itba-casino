@@ -1,3 +1,4 @@
+from pytest import console_main
 from .models import Profile
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
@@ -67,8 +68,14 @@ def buy_chips(req):
     "chips": req.user.profile.chips
   })
   
-def leaderboard(req):
-  users = User.objects.all().order_by('-profile__chips')
+def leaderboard(req, order_by='chips'):
+  if order_by == 'chips':
+    users = User.objects.all().order_by('-profile__chips')
+  elif order_by == 'poker_wins':
+    users = User.objects.all().order_by('-profile__poker_wins')
+  elif order_by == 'blackjack_wins':
+    users = User.objects.all().order_by('-profile__blackjack_wins')
   return render(req, 'leaderboard.html',{
-    "users": users
+    "users": users,
+    "order_by": order_by
   })

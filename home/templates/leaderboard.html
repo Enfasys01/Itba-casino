@@ -31,19 +31,39 @@
     font-weight: 600;
   }
 
+  .active{
+    color:var(--accent);
+    text-decoration: underline;
+  }
+
 </style>
 {% endblock %}
 
 {% block content %}
   <a href="{% url 'home' %}" class="link">Go back</a>
-  <h1 class="text-3xl font-bold mt-30 mb-10">Leaderboard</h1>
-
-  {% for u in users %}
-    <div class="leaderboard">
-      <span>{{ forloop.counter }}.</span>
-      <span>{{ u.username }} {% if u == user %} (you){% endif %}</span>
-      <span class="flex gap-2 items-center">{{ u.profile.chips }} <img src="{% static 'svg/chip.svg' %}" alt="SVG Image"></span>
+  <h1 class="text-3xl font-bold">Leaderboard</h1>
+  <div class="flex gap-2">
+    <span>Order by: </span>
+    <a href="{% url 'leaderboard' 'chips' %}" class="{% if order_by == 'chips' or not order_by %}active{% endif %}">Chips</a>
+    <a href="{% url 'leaderboard' 'poker_wins' %}" class="{% if order_by == 'poker_wins' %}active{% endif %}">Poker wins</a>
+    <a href="{% url 'leaderboard' 'blackjack_wins' %}" class="{% if order_by == 'blackjack_wins' %}active{% endif %}">Blackjack wins</a>
     </div>
-  {% endfor %}
+    <div class="mt-10">
+      {% for u in users %}
+        <div class="leaderboard">
+          <span>{{ forloop.counter }}.</span>
+          <span>{{ u.username }} {% if u == user %} (you){% endif %}</span>
+          <span class="flex gap-2 items-center">
+          {% if order_by == 'chips'%}
+            {{ u.profile.chips }} <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+          {% elif order_by == 'poker_wins' %}
+            {{ u.profile.poker_wins }}
+          {% elif order_by == 'blackjack_wins' %}
+            {{ u.profile.blackjack_wins }}
+          {% endif %}
+          </span>
+        </div>
+      {% endfor %}
+    </div>
 
 {% endblock %}

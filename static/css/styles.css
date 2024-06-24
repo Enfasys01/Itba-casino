@@ -111,6 +111,15 @@ a.main-link>img {
   width: 30px;
 }
 
+a.disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+a.disabled:hover {
+  color: var(--text);
+}
+
 .absolute-center {
   position: absolute;
   top: 50%;

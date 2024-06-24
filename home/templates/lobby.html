@@ -4,16 +4,21 @@
 {% block title %} Lobby {% endblock %}
 
 {% block content %}
-
+  <a href="{% url 'home' %}" class="link">Go back</a>
+  <h1 class="text-3xl font-bold">Select a game</h1>
   <div class="absolute-center">
-    <a href="{% url 'blackjack' %}" class="main-link">
+    <a href="{% url 'blackjack' %}" class="main-link {% if user.profile.chips == 0 %}disabled{% endif %}">
       Black jack
     </a>
-    <a href="{% url 'poker' %}" class="main-link">
-      Poker
+    <a href="{% url 'poker' %}" class="main-link {% if user.profile.chips < 500 %}disabled{% endif %}" >
+      Poker (500 buy-in)
     </a>
     <a href="{% url 'buy_chips' %}" class="main-link" style="font-size: 15px; max-width: 200px;">
       Buy chips
     </a>
-  </div>
+    </div>
+    <div class="chips absolute right-5 bottom-5">
+      <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
+      <p>{{ user.profile.chips }}</p>
+    </div>
 {% endblock %}
