@@ -62,6 +62,9 @@ class Player():
   def win_bet(self):
     self.profile.chips += 2 * self.current_bet
     self.current_bet = 0
+    print('You won!')
+    self.profile.blackjack_wins += 1
+    self.save()
     
   def lose_bet(self):
     self.current_bet = 0
@@ -86,6 +89,7 @@ class Game:
     self.dealer_hand.add_card(self.deck.deal())
     self.game_over = False
     self.state = 'start'
+    self.winner = ''
     
   def place_bet(self, amount):
     self.player.place_bet(amount)
@@ -111,17 +115,22 @@ class Game:
   def get_result(self):
     if self.player_hand.get_value() > 21:
       self.player.lose_bet()
+      self.winner = 'dealer'
       return 'lose'
     elif self.dealer_hand.get_value() > 21:
+      self.winner = 'player'
       self.player.win_bet()
       return 'win'
     elif self.player_hand.get_value() < self.dealer_hand.get_value():
+      self.winner = 'dealer'
       self.player.lose_bet()
       return 'lose'
     elif self.player_hand.get_value() > self.dealer_hand.get_value():
+      self.winner = 'player'
       self.player.win_bet()
       return 'win'
     else:
+      self.winner = 'draw'
       self.player.push_bet()
       return 'draw'
     
@@ -137,7 +146,8 @@ class Game:
       'game_over': self.game_over,
       'chips':self.player.profile.chips,
       'current_bet': self.player.current_bet,
-      'state': self.state
+      'state': self.state,
+      'winner': self.winner
     }
 
   @staticmethod
@@ -151,4 +161,5 @@ class Game:
     game.player.profile.chips = data.get('chips', 500)
     game.player.current_bet = data.get('current_bet', 0)
     game.state = data.get('state', 'player')
+    game.winner = data.get('winner', '')
     return game

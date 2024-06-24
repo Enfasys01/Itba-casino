@@ -6,8 +6,8 @@ from django.dispatch import receiver
 class Profile(models.Model):
   user = models.OneToOneField(User, on_delete=models.CASCADE)
   chips = models.IntegerField(default=1000)
-  # poker_wins = models.IntegerField(default=0)
-  # blackjack_wins = models.IntegerField(default=0)
+  poker_wins = models.IntegerField(default=0)
+  blackjack_wins = models.IntegerField(default=0)
 
   def __str__(self):
     return f'{self.user.username} Profile'

@@ -9,7 +9,6 @@ def home(req):
   return render(req, 'home.html')
 
 def signup(req):
-  print(req.POST)
   if req.method == 'POST':
     if req.POST['password'] == req.POST['password2']:
       try:
@@ -18,10 +17,8 @@ def signup(req):
         login(req, user)
         return redirect('home')
       except IntegrityError:
-        print('Username already taken. Choose another username.')
         return render(req, 'signup.html', {'error': 'Username already taken. Choose another username.', 'form': req.POST}, )
     else:
-      print('Passwords do not match')
       return render(req, 'signup.html', {'error': 'Passwords do not match', 'form': req.POST}, )
   else:
     return render(req, 'signup.html')
@@ -37,14 +34,10 @@ def signin(req):
   return render(req, 'signin.html')
 
 def lobby(req):
-  if req.method == 'POST':
-    print(req.POST)
   return render(req, 'lobby.html')
 
 def profile(req):
   all_profiles = Profile.objects.all().order_by('-chips')
-  for p in all_profiles:
-    print(p.user_id)
 
   for rank, item in enumerate(list(all_profiles)):
     if item.id == req.user.id:

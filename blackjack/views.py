@@ -26,7 +26,8 @@ def play_game(req):
     req.session['game'] = game.serialize()
     
   if game.is_game_over():
-    game.get_result()
+    if game.winner == '':
+      game.get_result()
 
   context = {
     'player_hand': game.player_hand.cards,
@@ -38,6 +39,6 @@ def play_game(req):
     'chips': game.player.profile.chips,
     'current_bet': game.player.current_bet,
     'xchips':game.player.profile.chips - game.player.current_bet,
-    'result': game.get_result()
+    'result': game.winner
   }
   return render(req, 'game.html', context)

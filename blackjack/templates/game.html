@@ -160,9 +160,9 @@
       <div class="current-bet">
         
         {% if is_game_over %}
-            {% if result == 'win' %}
+            {% if result == 'player' %}
               <h2>You win</h2>
-            {% elif result == 'lose' %}
+            {% elif result == 'dealer' %}
               <h2>You lose</h2>
             {% else %}
               <h2>Draw</h2>
@@ -201,7 +201,7 @@
         {% endif %}
         <div class="chips">
           <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
-          <p class="{% if is_game_over and result == 'win' or result == 'draw' %}animate-counter{% endif %}">{{ chips }}</p>
+          <p class="{% if is_game_over and result == 'player' or result == 'draw' %}animate-counter{% endif %}">{{ chips }}</p>
         </div>
       </div>
     </div>

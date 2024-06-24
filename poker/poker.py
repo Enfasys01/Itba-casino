@@ -336,6 +336,9 @@ class Game():
     
     if result == 'player':
       self.player.chips += self.pot
+      if self.bot.chips == 0:
+        self.player.profile.poker_wins += 1
+        self.player.profile.save()
     elif result == 'bot':
       self.bot.chips += self.pot
     
@@ -349,6 +352,7 @@ class Game():
     self.round += 1
     self.cards = []
     self.deck = Deck()
+    self.deck.shuffle()
     self.deal_players()
     
     if self.round%2 == 0:
@@ -405,6 +409,7 @@ class Game():
     # print('deserializing', data.get('deck', []))
     game = Game(user)
     game.deck = Deck.deserialize(cards=data.get('deck', []))
+    game.deck.shuffle()
     
     game.player = Player(chips=data.get('player')['chips'], profile = user.profile)
     game.player.set_hand(data.get('player', {}).get('hand', []))

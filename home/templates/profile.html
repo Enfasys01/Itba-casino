@@ -1,6 +1,33 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %} Profile {% endblock %}
+
+{% block style %}
+<style>
+
+  .box-container{
+    gap: 0 !important;
+  }
+
+  .user-profile-item{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 15px 30px;
+    border-bottom: solid 2px var(--bg2);
+  }
+
+  .user-profile-item span{
+    font-weight: 600;
+  }
+
+  .user-profile-item:last-child{
+    border-bottom: none;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 
@@ -8,11 +35,13 @@
 
   <h1 class="text-5xl text-center font-bold mt-30">Profile</h1>
 
-  <div class="box-container mt-10 max-w-lg mx-auto text-lg">
-    <p>Username: {{ user.username }}</p>
-    <p>Email: {{ user.email }}</p>
-    <p>Rank: {{ rank }}</p>
-    <p>Chips: {{ user.profile.chips }}</p>
+  <div class="box-container mt-10 max-w-lg mx-auto text-lg gap-0">
+    <p class="user-profile-item">Username: <span>{{ user.username }}</span></p>
+    <p class="user-profile-item">Email: <span>{{ user.email }}</span></p>
+    <p class="user-profile-item">Rank: <span>{{ rank }}</span></p>
+    <p class="user-profile-item">Chips: <span class="flex gap-2"> <img src="{% static 'svg/chip.svg' %}" alt="SVG Image"> {{ user.profile.chips }}</span></p>
+    <p class="user-profile-item">Blackjack wins: <span>{{ user.profile.blackjack_wins }}</span></p>
+    <p class="user-profile-item">Poker wins: <span>{{ user.profile.poker_wins }}</span></p>
   </div>
 
 {% endblock %}
