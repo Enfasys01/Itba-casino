@@ -50,7 +50,7 @@ def profile(req):
 
 def signout(req):
   logout(req)
-  return render(req, 'home.html')
+  return redirect('home')
 
 def buy_chips(req):
   if req.method == 'POST':

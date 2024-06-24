@@ -5,13 +5,10 @@
 {% load static %}
 {% block content %}
 
-  <h1 class="text-5xl text-center font-bold  mt-32">Casino</h1>
-  {% if user.is_authenticated %}
-    <p class="text-center mt-5">Welcome, {{ user.username }}!</p>
-
-  {% endif %}
+  <h1 class="text-5xl text-center font-bold  mt-24">Casino</h1>
   <div class="absolute-center">
     {% if user.is_authenticated %}
+    <p class="text-center mt-5">Welcome, {{ user.username }}!</p>
     <a href="{% url 'lobby' %}" class="main-link">
       <img src="{% static 'svg/chip.svg' %}" alt="SVG Image">
       <span>

@@ -38,7 +38,6 @@
   <div class="box-container mt-10 max-w-lg mx-auto text-lg gap-0">
     <p class="user-profile-item">Username: <span>{{ user.username }}</span></p>
     <p class="user-profile-item">Email: <span>{{ user.email }}</span></p>
-    <p class="user-profile-item">Rank: <span>{{ rank }}</span></p>
     <p class="user-profile-item">Chips: <span class="flex gap-2"> <img src="{% static 'svg/chip.svg' %}" alt="SVG Image"> {{ user.profile.chips }}</span></p>
     <p class="user-profile-item">Blackjack wins: <span>{{ user.profile.blackjack_wins }}</span></p>
     <p class="user-profile-item">Poker wins: <span>{{ user.profile.poker_wins }}</span></p>

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .poker import Game
 def play_game(req):
-  if req.user.profile.chips <= 500:
+  if req.user.profile.chips <= 500 or not req.user.is_authenticated:
     return redirect('home')
   else:
     game = Game(req.user)
@@ -10,6 +10,7 @@ def play_game(req):
 
 def play(req):
   # print('play',req.session.get('game'))
+  if not req.user.is_authenticated: return redirect('home')
   game = Game.deserialize(req.session.get('game'), req.user)
   
   winner = None
