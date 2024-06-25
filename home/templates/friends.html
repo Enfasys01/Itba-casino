@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %} Friends {% endblock %}
+
+{% block style %}
+<style>
+  input{
+    background-color: var(--bg3);
+    padding: 10px 20px !important;
+    border-radius: var(--round) !important;
+  }
+
+  .list{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    border-bottom: solid 2px var(--bg2);
+  }
+
+  .list:first-of-type{
+    border-top: solid 2px var(--bg2);
+  }
+
+  .list:last-of-type{
+    border-bottom: none;
+  }
+
+  .list span:nth-child(1){
+    font-weight: 600;
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'home' %}" class="link">Go back</a>
+  <h1 class="text-3xl font-bold my-2">Friends</h1>
+  <div class="flex gap-3  items-center">
+    <a href="{% url 'friends' %}" class="btn">Friends</a>
+    <a href="{% url 'friend_requests' %}" class="btn">Requests</a>
+    <form action="{% url 'send_friend_request' %}" method="POST" class="ml-auto flex gap-3 items-center mt-2">
+      {% csrf_token %}
+      <input type="text" name="to_user" id="to_user" placeholder="New friend" required>
+      <button class="btn" type="submit">Send request</button>
+    </form>
+  </div>
+
+  {% if view == 'friends' %}
+    <h2 class="text-xl font-bold my-2">All friends</h2>
+    {% if friends|length == 0 %}
+      <p>You don't have any friends :(</p>
+    {% endif %}
+    {% for friend in friends %}
+    <div class="list">
+      <span>
+        {{ friend }}
+      </span>
+      <form method="post" class="flex gap-2 ml-auto">
+        {% csrf_token %}
+        <button class="link" name="unfriend" value="{{ friend }}">Unfriend</button>
+      </form>
+    </div>
+    {% endfor %}
+  {% elif view == 'requests' %}
+    <h2 class="text-xl font-bold my-2">Friend requests</h2>
+    {% if friends|length == 0 %}
+      <p>You don't have any friend requests</p>
+    {% endif %}
+    {% for friend in friends %}
+      <div class="list">
+        <span>
+          {{ friend.from_user.username }}
+        </span>
+        <form method="post" class="flex gap-2 ml-auto">
+          {% csrf_token %}
+          <button class="link" name="accept" value="{{ friend.from_user }}">Accept</button>
+          -
+          <button class="link" name="decline" value="{{ friend.from_user }}">Decline</button>
+        </form>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endblock %}

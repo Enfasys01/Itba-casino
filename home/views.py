@@ -1,5 +1,5 @@
 from pytest import console_main
-from .models import Profile
+from .models import Friend_request, Profile
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
@@ -36,6 +36,45 @@ def signin(req):
 
 def lobby(req):
   return render(req, 'lobby.html')
+
+def friends(req):
+  if req.method == 'POST':
+    if req.POST.get('unfriend'):
+      friend = User.objects.filter(username=req.POST['unfriend']).first()
+      friend_request = Friend_request.objects.filter(from_user=req.user,to_user=friend).first()
+      if not friend_request: friend_request = Friend_request.objects.filter(from_user=friend,to_user=req.user).first()
+      if friend_request: friend_request.delete()
+  friends = Friend_request.get_user_friends(req.user)
+  return render(req, 'friends.html',{
+    'friends': friends,
+    'view': 'friends'
+  })
+  
+def friend_requests(req):
+  if req.method == 'POST':
+    if req.POST.get('accept'):
+      from_user = User.objects.filter(username=req.POST['accept']).first()
+      friend_request = Friend_request.objects.filter(to_user=req.user,from_user=from_user).first()
+      friend_request.state = 'accepted'
+      friend_request.save()
+    elif req.POST.get('decline'):
+      from_user = User.objects.filter(username=req.POST['decline']).first()
+      friend_request = Friend_request.objects.filter(to_user=req.user,from_user=from_user).first()
+      friend_request.state = 'declined'
+      friend_request.save()
+  return render(req, 'friends.html',{
+    'friends': Friend_request.objects.filter(state='pending',to_user=req.user),
+    'view': 'requests'
+  })
+  
+def send_friend_request(req):
+  print(req.method)
+  if req.method == 'POST':
+    if (not Friend_request.objects.filter(from_user=req.user,to_user=User.objects.filter(username=req.POST['to_user']).first()).exists() or not Friend_request.objects.filter(from_user=User.objects.filter(username=req.POST['to_user']).first(),to_user=req.user).exists()) and req.POST['to_user'] != req.user.username:
+      to_user = User.objects.filter(username=req.POST['to_user']).first()
+      if to_user is not None:
+        Friend_request.send(from_user=req.user,to_user=to_user)
+  return redirect('friends')
 
 def profile(req):
   all_profiles = Profile.objects.all().order_by('-chips')

@@ -65,6 +65,14 @@ form.form div.input-container{
   font-weight: 600;
 }
 
+.btn.primary{
+  background-color: var(--accent);
+}
+
+.btn.cancel{
+  background-color: var(--red);
+}
+
 button:disabled{
   opacity: 0.5;
 }

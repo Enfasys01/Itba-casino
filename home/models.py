@@ -19,3 +19,25 @@ class Profile(models.Model):
 
   def save(self, *args, **kwargs):
     super().save(*args, **kwargs)
+    
+class Friend_request(models.Model):
+  from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='from_user')
+  to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='to_user')
+  state = models.TextField(default='pending')
+  
+  def send(from_user, to_user):
+    print('sending request',from_user, to_user)
+    Friend_request.objects.create(from_user=from_user, to_user=to_user)
+    
+  def get_user_friends(user):
+    friend_requests = list(Friend_request.objects.filter(to_user=user, state='accepted')) + list(Friend_request.objects.filter(from_user=user, state='accepted'))
+    friends = []
+    
+    for friend_request in friend_requests:
+      if friend_request.from_user == user:
+        friends.append(friend_request.to_user)
+      else:
+        friends.append(friend_request.from_user)
+    
+    return friends
+    

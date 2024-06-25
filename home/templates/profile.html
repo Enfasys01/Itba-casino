@@ -7,6 +7,8 @@
 
   .box-container{
     gap: 0 !important;
+    padding: 10px 20px !important;
+    max-width: 450px !important;
   }
 
   .user-profile-item{
@@ -33,8 +35,8 @@
 
   <a href="{% url 'home' %}" class="link">Go back</a>
 
-  <h1 class="text-5xl text-center font-bold mt-30">Profile</h1>
-
+  <h1 class="text-3xl font-bold">Profile</h1>
+  
   <div class="box-container mt-10 max-w-lg mx-auto text-lg gap-0">
     <p class="user-profile-item">Username: <span>{{ user.username }}</span></p>
     <p class="user-profile-item">Email: <span>{{ user.email }}</span></p>
