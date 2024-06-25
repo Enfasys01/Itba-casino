@@ -108,13 +108,14 @@ def buy_chips(req):
   })
   
 def leaderboard(req, order_by='chips'):
-  if order_by == 'chips':
-    users = User.objects.all().order_by('-profile__chips')
-  elif order_by == 'poker_wins':
-    users = User.objects.all().order_by('-profile__poker_wins')
-  elif order_by == 'blackjack_wins':
-    users = User.objects.all().order_by('-profile__blackjack_wins')
+  print(req.GET.get('list'))
+  if req.GET.get('list') == 'friends':
+    users = Friend_request.get_user_friends(req.user) + [req.user]
+    users.sort(key=lambda x: x.profile.__dict__[order_by], reverse=True)
+  else:
+    users = User.objects.all().order_by('-profile__'+order_by)
   return render(req, 'leaderboard.html',{
     "users": users,
-    "order_by": order_by
+    "order_by": order_by,
+    "list": req.GET.get('list')
   })

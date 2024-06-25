@@ -44,10 +44,15 @@
   <h1 class="text-3xl font-bold">Leaderboard</h1>
   <div class="flex gap-2">
     <span>Order by: </span>
-    <a href="{% url 'leaderboard' 'chips' %}" class="{% if order_by == 'chips' or not order_by %}active{% endif %}">Chips</a>
-    <a href="{% url 'leaderboard' 'poker_wins' %}" class="{% if order_by == 'poker_wins' %}active{% endif %}">Poker wins</a>
-    <a href="{% url 'leaderboard' 'blackjack_wins' %}" class="{% if order_by == 'blackjack_wins' %}active{% endif %}">Blackjack wins</a>
-    </div>
+    <a href="{% url 'leaderboard' 'chips' %}?list={{list}}" class="{% if order_by == 'chips' or not order_by %}active{% endif %}">Chips</a>
+    <a href="{% url 'leaderboard' 'poker_wins' %}?list={{list}}" class="{% if order_by == 'poker_wins' %}active{% endif %}">Poker wins</a>
+    <a href="{% url 'leaderboard' 'blackjack_wins' %}?list={{list}}" class="{% if order_by == 'blackjack_wins' %}active{% endif %}">Blackjack wins</a>
+    {% if list == 'friends' %}
+    <a href="{% url 'leaderboard' order_by %}" class="ml-auto">See all players</a>
+    {%else%}
+    <a href="{% url 'leaderboard' order_by %}?list=friends" class="ml-auto">See friends</a>
+    {% endif %}
+  </div>
     <div class="mt-10">
       {% for u in users %}
         <div class="leaderboard">
