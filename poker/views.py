@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .poker import Game
 def play_game(req):
-  if req.user.profile.chips <= 500 or not req.user.is_authenticated:
+  if req.user.profile.chips < 500 or not req.user.is_authenticated:
     return redirect('home')
   else:
     game = Game(req.user)
@@ -43,6 +43,14 @@ def play(req):
     
     req.session['game'] = game.serialize()
 
+  min_bet = game.bet + game.blind
+  if min_bet > game.player.chips:
+    min_bet = game.player.chips
+    
+  max_bet = game.player.chips
+  if game.player.chips > game.bot.chips:
+    max_bet = game.bot.chips
+
   context = {
     'player': {'chips': game.player.chips, 'hand': game.player.hand.cards, 'bet': game.player.current_bet, 'score': game.get_player_score()},
     'bot': {'chips': game.bot.chips, 'hand': game.bot.hand.cards, 'bet': game.bot.current_bet, 'score': game.get_bot_score()},
@@ -52,7 +60,9 @@ def play(req):
     'state': game.state,
     'game_bet': game.bet,
     'winner': winner,
-    'deal': deal
+    'deal': deal,
+    'min_bet': min_bet,
+    'max_bet': max_bet
   }
   
   # print('context',context)

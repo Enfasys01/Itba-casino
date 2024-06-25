@@ -103,9 +103,12 @@ class Player():
     if self.chips >= amount:
       self.chips -= amount
       self.current_bet += amount
-      if self.profile:
-        self.profile.chips -= amount
-        self.profile.save()
+    else :
+      self.current_bet += self.chips
+      self.chips = 0
+    if self.profile:
+      self.profile.chips -= amount
+      self.profile.save()
         
   def win_bet(self, amount):
     if self.profile:
@@ -360,7 +363,8 @@ class Game():
       self.player.bet(self.blind)
     else:
       self.dealer = 'bot'
-      self.bot.bet(self.blind)
+      if self.player.chips < self.blind: self.player.bet(self.player.chips)
+      else: self.bot.bet(self.blind)
     
   def get_bot_score(self):
     hand = [PECard(card.serialize()[0], card.serialize()[1]) for card in self.bot.hand.cards]

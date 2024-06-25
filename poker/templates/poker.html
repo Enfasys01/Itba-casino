@@ -412,7 +412,7 @@
             <button class="btn" type="submit" name="action" value="fold">Fold</button>
           </div>
           <div id="raise-controls" class="w-80" style="display: none;">
-            <input class="my-1" type="range" name="raise" id="raise-slider" value="{{game_bet|add:blind}}" min="{{game_bet|add:blind}}" max="{% if player.chips <= bot.chips %}{{player.chips}}{% else %}{{bot.chips}}{% endif %}" step="10" oninput="updateSliderValue(this.value)">
+            <input class="my-1" type="range" name="raise" id="raise-slider" value="{{game_bet|add:blind}}" min="{{min_bet}}" max="{{max_bet}}" step="10" oninput="updateSliderValue(this.value)">
             <p id="slider-value" class="mb-1"></p>
             <div class="flex justify-center gap-2">
               <button class="btn" type="button" onclick="toggleRaise()">Cancel</button>
